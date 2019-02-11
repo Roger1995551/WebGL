@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ColorPoints</title>
+</head>
+<body onload="main()">
+<canvas id="webgl" width="400" height="400">
+    Please use the browser supporting "canvas".
+</canvas>
+<script src="CreateContext.js"></script>
+<script src="lib/cuon-matrix.js"></script>
+<script src="lib/cuon-utils.js"></script>
+<script src="lib/webgl-debug.js"></script>
+<script src="lib/webgl-utils.js"></script>
+<script>
+    // 顶点着色器程序
+    let VSHADER_SOURCE =
+        'attribute vec4 a_Position;\n' +
+        'attribute float a_PointSize;\n' +
+        'void main() {\n' +
+        'gl_Position = a_Position;\n' + // 设置坐标
+        'gl_PointSize = a_PointSize;\n' + // 设置尺寸
+        '}\n';
+    // 片元着色器程序
+    let FSHADER_SOURCE =
+        'precision mediump float;\n' +
+        'uniform vec4 u_FragColor;\n' +
+        'void main(){\n' +
+        'gl_FragColor = u_FragColor;\n' + // 设置颜色
+        '}\n';
+    function main() {
+        let canvas = document.getElementById('webgl');
+        let gl = getWebGLContext(canvas);
+        // 初始化着色器
+        if(!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)){
+            console.log('Failed to initialize shaders');
+            return;
+        };
+        // 注册顶点着色器里面的attribute，attribute只能用于顶点着色器
+        let a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+        let a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
+        let u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+        if(a_Position < 0){
+            console.log('Failed to get the storage location of a_Position');
+            return;
+        };
+        if(a_PointSize < 0){
+            console.log('Failed to get the storage location of a_PointSize');
+            return;
+        };
+        if(!u_FragColor){
+            console.log('Failed to get u_FragColor   variable');
+            return;
+        }
+        // 注册鼠标点击事件
+        canvas.onmousedown = function(event){
+          click(event, gl, canvas, a_Position, u_FragColor);
+        };
+        // 初始化大小
+        gl.vertexAttrib1f(a_PointSize, 10.0);
+        // 设置背景颜色
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        // 清空<canvas>
+        gl.clear(gl.COLOR_BUFFER_BIT);
+    };
+    // 创建坐标数组
+    let g_points = [];
+    // 创建颜色数组
+    let g_colors = [];
+    // 画布的点击事件
+    click = function (event, gl, canvas, a_Position, u_FragColor) {
+        let rect = event.target.getBoundingClientRect(); // 获取canvas与客户端界面的边距
+        let x = (event.clientX-rect.left-canvas.width/2)/(canvas.width/2);// 获取x坐标
+        let y = (-event.clientY+rect.top+canvas.height/2)/(canvas.height/2.0);// 获取y坐标
+        g_points.push([x,y]);// 将x,y坐标写入
+        if(x >= 0 && y > 0){// 第一象限
+            g_colors.push([1.0, 0.0, 0.0]);
+        }
+        if(x < 0 && y >= 0){// 第四象限
+            g_colors.push([0.0, 1.0, 0.0]);
+        }
+        if(x <= 0 && y < 0){// 第三象限
+            g_colors.push([0.0, 0.0, 1.0]);
+        }
+        if(x > 0 && y <= 0){// 第二象限
+            g_colors.push([0.5, 0.5, 0.5]);
+        }
+        gl.clear(gl.COLOR_BUFFER_BIT); // 清空画布
+        // 遍历绘制点
+        for(let i=0; i < g_points.length; i++){
+            let xy = g_points[i];
+            let color = g_colors[i];
+            gl.vertexAttrib3f(a_Position, xy[0], xy[1], 0.0);// 设置顶点着色器的坐标
+            gl.uniform4f(u_FragColor, color[0], color[1], color[2], 1.0);// 设置点的颜色
+            gl.drawArrays(gl.POINTS, 0, 1);// 画出点
+        };
+    };
+</script>
+</body>
+</html>

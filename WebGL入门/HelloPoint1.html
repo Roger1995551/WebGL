@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Draw a point (1)</title>
+</head>
+<body onload="main()">
+    <canvas id="webgl" width="400" height="400">
+        Please use the browser supporting "canvas".
+    </canvas>
+<script src="CreateContext.js"></script>
+    <script src="lib/cuon-matrix.js"></script>
+    <script src="lib/cuon-utils.js"></script>
+    <script src="lib/webgl-debug.js"></script>
+    <script src="lib/webgl-utils.js"></script>
+<script>
+    // 顶点着色器程序
+    let VSHADER_SOURCE =
+        'void main() {\n' +
+        'gl_Position = vec4(0.0, 0.0, 0.0, 1.0);\n' + // 设置坐标
+        'gl_PointSize = 10.0;\n' + // 设置尺寸
+        '}\n';
+    // 片元着色器程序
+    let FSHADER_SOURCE =
+        'void main(){\n' +
+        'gl_FragColor = vec4(0.5, 0.5, 0.5, 1.0);\n' + // 设置颜色
+        '}\n';
+    function main() {
+        let canvas = document.getElementById('webgl');
+        let gl = getWebGLContext(canvas);
+        // 初始化着色器
+        if(!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)){
+            console.log('Failed to initialize shaders');
+            return;
+        }
+        // 设置背景颜色
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        // 清空<canvas>
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        // 绘制一个点
+        gl.drawArrays(gl.POINTS, 0, 1);
+    }
+</script>
+</body>
+</html>

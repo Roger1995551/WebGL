@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Clear canvas</title>
+</head>
+<body onload="main()">
+    <canvas id="webgl" width="400" height="400">
+        Please use the browser supporting "canvas"
+    </canvas>
+    <script>
+        function main(){
+            let gl = createContext('webgl');
+            gl.clearColor(0.0, 0.0, 1.0, 1.0); // 制定清空<canvas>的颜色
+            gl.clear(gl.COLOR_BUFFER_BIT);// 清空<canvas>
+        }
+    </script>
+    <script src="CreateContext.js"></script>
+</body>
+</html>
